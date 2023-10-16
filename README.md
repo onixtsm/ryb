@@ -34,9 +34,9 @@ $ ./build/main
 ```
 
 ## Learning material
-* [freecodecamp] (https://www.freecodecamp.org/news/learn-the-basics-of-git-in-under-10-minutes-da548267cc91/)
-* [git-scm] (https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository)
-* [freecodecamp youtube] (https://www.youtube.com/watch?v=RGOj5yH7evk)
+* [freecodecamp](https://www.freecodecamp.org/news/learn-the-basics-of-git-in-under-10-minutes-da548267cc91/)
+* [git-scm](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository)
+* [freecodecamp youtube](https://www.youtube.com/watch?v=RGOj5yH7evk)
 
 
 #### P.S.
