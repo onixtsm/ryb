@@ -1,0 +1,44 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-I.",
+      "-I./platform/",
+      "-I./library/",
+      "-I./external/",
+      "-O0",
+      "-g3",
+      "-ggdb",
+      "-Wextra",
+      "-Wall",
+      "-o",
+      "build/obj/foo.o",
+      "src/foo.c"
+    ],
+    "directory": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb",
+    "file": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/src/foo.c",
+    "output": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/build/obj/foo.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-I.",
+      "-I./platform/",
+      "-I./library/",
+      "-I./external/",
+      "-O0",
+      "-g3",
+      "-ggdb",
+      "-Wextra",
+      "-Wall",
+      "-o",
+      "build/obj/main.o",
+      "src/main.c"
+    ],
+    "directory": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb",
+    "file": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/src/main.c",
+    "output": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/build/obj/main.o"
+  }
+]
