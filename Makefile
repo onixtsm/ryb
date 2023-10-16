@@ -73,9 +73,10 @@ ${BUILD_DIR}/%.d: %.c | ${DIRS}
 	${CC} -c -MT"${BUILD_DIR}/$*.o" -MM  -o $@ $^ ${CFLAGS}
 
 ${BUILD_DIR}/%.o: %.c | ${DIRS}
-	${CC} -c -o $@$< ${CFLAGS}
+	${CC} -c -o $@ $< ${CFLAGS}
 
 ${LIB_PYNQ}: ${OBJECTS_LIBRARIES} | ${LIB_DIR}
+	@mkdir -p build/lib
 	$(AR) rcs $@ $?
 
 %/:
@@ -96,6 +97,9 @@ ${BUILD_DIR}/html: documentation/ryb.doxy ${LIBRARIES_SOURCES} ${LIBRARIES_HEADE
 	rm documentation/ryb.doxy.new
 	${MAKE} -C ${BUILD_DIR}/latex/
 
+
+${LIB_DIR}:
+		@mkdir -p $@
 # can only clean both library and applications
 clean: 
 	rm -rf ${OBJ_DIR} ${BUILD_DIR}/main

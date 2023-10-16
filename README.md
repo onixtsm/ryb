@@ -9,6 +9,7 @@ Instalation
 ```console
 $ git clone https://github.com/onixtsm/ryb
 $ cp ryb {pynq_board_any_place}
+$ cd {pynq_board_any_place}/ryb
 $ make # can use make -j 4 to compile faster
 ```
 
