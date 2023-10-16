@@ -3,10 +3,10 @@ ROOT_DIR:=.
 # when compiling empty library:
 # CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb
 
-LIBRARIES_SOURCES:=$(wildcard library/*.c)
-LIBRARIES_HEADERS:=$(wildcard library/*.h)
-EXTERNAL_SOURCES:=$(wildcard external/*.c)
-EXTERNAL_HEADERS:=$(wildcard external/*.h)
+LIBRARIES_SOURCES:=$(wildcard ${ROOT_DIR}/library/*.c)
+LIBRARIES_HEADERS:=$(wildcard ${ROOT_DIR}/library/*.h)
+EXTERNAL_SOURCES:=$(wildcard ${ROOT_DIR}/external/*.c)
+EXTERNAL_HEADERS:=$(wildcard ${ROOT_DIR}/external/*.h)
 LIBRARIES_OBJECTS:=$(LIBRARIES_SOURCES:.c=.o) $(EXTERNAL_SOURCES:.c=.o)
 
 SUDO?=sudo
@@ -28,11 +28,15 @@ SOURCES:=$(wildcard ${SRC_DIR}/*.c)
 SOURCES_H:=$(wildcard ${SRC_DIR}/*.h)
 SOURCES_OBJ:=$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
 
-
 D_FILES:=$(OBJECTS_LIBRARIES:.o=.d) $(LIBRARIES:.o=.d)
 
 CFLAGS:=-I. -I${ROOT_DIR}/platform/ -I${ROOT_DIR}/library/ -I${ROOT_DIR}/external/ -lm -O0 -g3 -ggdb -Wextra -Wall
 LDFLAGS:= -lm -ggdb -g3 -I. -I${SRC_DIR}
+
+x86_64:=x86_64
+ifeq ($(shell uname -m), $(x86_64))
+	CC=arm-linux-gnueabihf-gcc
+	endif
 
 all: ${LIB_PYNQ} ${LIB_SCPI} ${BUILD_DIR}/main
 
@@ -63,7 +67,7 @@ install:
 	sudo setcap cap_sys_rawio+ep bin/pin-indexing-tool
 
 ${LIB_SCPI}:
-	$(MAKE) -C external/scpi-parser/libscpi/
+	$(MAKE) -C ${ROOT_DIR}/external/scpi-parser/libscpi/
 
 ifneq (clean,$(MAKECMDGOALS))
 -include ${D_FILES}
