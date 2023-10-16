@@ -25,6 +25,7 @@ DIRS:=$(foreach obj,$(LIBRARIES_OBJECTS),${BUILD_DIR}/$(dir $(obj))/)
 SRC_DIR:=${ROOT_DIR}/src
 
 SOURCES:=$(wildcard ${SRC_DIR}/*.c)
+SOURCES_H:=$(wildcard ${SRC_DIR}/*.h)
 SOURCES_OBJ:=$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
 
 
@@ -44,7 +45,6 @@ ${OBJ_DIR}/%.o: ${SRC_DIR}/%.c | ${DIRS}
 
 ${BUILD_DIR}/main: ${SOURCES_OBJ} ${LIB_PYNQ} ${EXTERNAL_LIBS}
 	$(VERBOSE)${CC} -o $@ $^   ${LDFLAGS} 
-
 	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
 
 # first time 
@@ -73,7 +73,7 @@ ${BUILD_DIR}/%.d: %.c | ${DIRS}
 	${CC} -c -MT"${BUILD_DIR}/$*.o" -MM  -o $@ $^ ${CFLAGS}
 
 ${BUILD_DIR}/%.o: %.c | ${DIRS}
-	${CC} -c -o $@ $< ${CFLAGS}
+	${CC} -c -o $@$< ${CFLAGS}
 
 ${LIB_PYNQ}: ${OBJECTS_LIBRARIES} | ${LIB_DIR}
 	$(AR) rcs $@ $?
@@ -81,7 +81,9 @@ ${LIB_PYNQ}: ${OBJECTS_LIBRARIES} | ${LIB_DIR}
 %/:
 	mkdir -p ${@}
 
-indent: indent-library indent-applications
+indent:
+	clang-format -i $^ ${SOURCES} ${SOURCES_H}
+
 
 indent-library: ${LIBRARIES_SOURCES} ${LIBRARIES_HEADERS}
 	clang-format -i $^
