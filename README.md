@@ -18,7 +18,7 @@ $ make # can use make -j 4 to compile faster
 To recompile code run `make` from root of the project
 You can intend code by runing
 ```console
-$ make intend
+$ make indent
 ```
 
 Compiled code is in `./build/main`
