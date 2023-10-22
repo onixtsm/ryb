@@ -36,7 +36,7 @@ LDFLAGS:= -lm -ggdb -g3 -I. -I${SRC_DIR}
 x86_64:=x86_64
 ifeq ($(shell uname -m), $(x86_64))
 	CC=arm-linux-gnueabihf-gcc
-	endif
+endif
 
 all: ${LIB_PYNQ} ${LIB_SCPI} ${BUILD_DIR}/main
 
@@ -45,10 +45,10 @@ ${BUILD_DIR}/%.d: %.c | ${DIRS}
 
 ${OBJ_DIR}/%.o: ${SRC_DIR}/%.c | ${DIRS}
 	@mkdir -p $(@D)  # Create the directory if it doesn't exist
-	${CC} -c -o $@ $< ${CFLAGS}
+	${CC} -c -o $@ $< ${CFLAGS} -DDEBUG
 
 ${BUILD_DIR}/main: ${SOURCES_OBJ} ${LIB_PYNQ} ${EXTERNAL_LIBS}
-	$(VERBOSE)${CC} -o $@ $^   ${LDFLAGS} 
+	$(VERBOSE)${CC} -o $@ $^ ${LDFLAGS} -DDEBUG
 	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
 
 # first time 
