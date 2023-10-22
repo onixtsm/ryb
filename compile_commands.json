@@ -1,7 +1,7 @@
 [
   {
     "arguments": [
-      "/usr/bin/cc",
+      "/usr/bin/arm-linux-gnueabihf-gcc",
       "-c",
       "-I.",
       "-I./platform/",
@@ -13,16 +13,16 @@
       "-Wextra",
       "-Wall",
       "-o",
-      "build/obj/foo.o",
-      "src/foo.c"
+      "build/obj/communication.o",
+      "src/communication.c"
     ],
     "directory": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb",
-    "file": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/src/foo.c",
-    "output": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/build/obj/foo.o"
+    "file": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/src/communication.c",
+    "output": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/build/obj/communication.o"
   },
   {
     "arguments": [
-      "/usr/bin/cc",
+      "/usr/bin/arm-linux-gnueabihf-gcc",
       "-c",
       "-I.",
       "-I./platform/",
