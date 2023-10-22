@@ -1,59 +1,54 @@
 #include <libpynq.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "communication.h"
 #include "helpers.h"
-#include "switchbox.h"
-#include "uart.h"
-#include "util.h"
 
 int main(int argc, char **argv) {
   pynq_init();
   switchbox_init();
   reset_pins();
-  if (argc < 2) {
-    ERROR("Not enough args\n");
+
+  if (argc < 3) {
+    ERROR("Usage <receiver pin> <transmitter pin>");
     return 1;
   }
 
-  const uint8_t pin = *argv[2] - '0';
-  int err;
+  uint8_t receiver = *argv[1] - '0';
+  uint8_t transmitter = *argv[2] - '0';
+  set_pin(receiver, 0);
+  set_pin(transmitter, 1);
 
-  switch (*argv[1]) {
-    case 't':
-      err = set_pin(pin, 0);
-      if (err != 0) {
-        return 1;
-      }
-      char *buffer = "Hello, seaman\n";
-      for (size_t i = 0; buffer[i] != 0; i++) {
-        printf("%c", buffer[i]);
-        transmit_data(pin, buffer[i]);
-      }
-      break;
-    case 'r':
-      err = set_pin(pin, 1);
-      if (err != 0) {
-        ERROR("Could not set pin");
-        printf("%d\n", err);
-        return 1;
-      }
-      char info[16] = {0};
-      size_t i = 0;
-      do {
-        info[i] = recieve_data(pin);
-      }
-      while (info[i++] != '\n');
-      printf("done\n");
-      printf("%s", info);
+  char c;
+  char m[40];
+
+  pid_t pid = fork();
+  if (pid < 0) {
+    return 1;
+  } else if (pid == 0) {
+    printf("Message :");
+    while ((c = recieve_data(receiver)) != '\n') {
+      printf("%c", c);
       fflush(stdout);
-      break;
-    default:
-      printf("No such command\n");
+    }
+    printf("\n");
+    fflush(stdout);
+  } else {
+    printf("Message? ");
+    scanf("%s", m);
+    for (size_t i = 0; i < strlen(m); ++i) {
+      transmit_data(transmitter, m[i]);
+    }
+    transmit_data(transmitter, '\n');
   }
+  wait(NULL);
+  free_pin(receiver);
+  free_pin(transmitter);
 
+  switchbox_reset();
   pynq_destroy();
   return 0;
 }

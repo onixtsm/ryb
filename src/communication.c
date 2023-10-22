@@ -15,6 +15,8 @@
 #include "uart.h"
 #include "util.h"
 
+#undef DEBUG
+
 #define BIT_TYPE(a) ((a) ? TRANSMITTING : RECEIVING)
 
 _pin_t _pins[PIN_COUNT] = {
@@ -57,7 +59,7 @@ int transmit_data(const uint8_t pin, const uint8_t data) {
 #endif
 
   uart_send(controller, data);
-  sleep_msec(150);
+  // sleep_msec(150);
   return 0;
 }
 
