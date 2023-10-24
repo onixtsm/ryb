@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define PIN_COUNT 6
-#define CONTROLLR_COUNT 2
+#define CONTROLLER_COUNT 2
 
 typedef struct {
   int8_t controller;  // Empty pin has -1 as controller

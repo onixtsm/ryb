@@ -22,12 +22,12 @@
 _pin_t _pins[PIN_COUNT] = {
     {-1, false},
 };
-_controller_t _controllers[CONTROLLR_COUNT] = {0};
+_controller_t _controllers[CONTROLLER_COUNT] = {0};
 
 bool validate_pin(const uint8_t pin) { return pin < PIN_COUNT; }
 
 int8_t find_suitable_controller(const bool type) {
-  for (int8_t i = 0; i < CONTROLLR_COUNT; ++i) {
+  for (int8_t i = 0; i < CONTROLLER_COUNT; ++i) {
     if (type) {
       if (_controllers[i] >> 1 == 0) {
         return i;
@@ -91,6 +91,9 @@ int reset_pins(void) {
   for (uint8_t i = 0; i < PIN_COUNT; ++i) {
     _pins[i].controller = -1;
     _pins[i].type = false;
+  }
+  for (uint8_t i = 0; i < CONTROLLER_COUNT; ++i) {
+    _controllers[i] = 0;
   }
   return 0;
 }
