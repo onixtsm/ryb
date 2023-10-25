@@ -28,12 +28,15 @@ bool validate_pin(const uint8_t pin) { return pin < PIN_COUNT; }
 
 int8_t find_suitable_controller(const bool type) {
   for (int8_t i = 0; i < CONTROLLER_COUNT; ++i) {
+#ifdef DEBUG
+    LOG(d, _controllers[i]);
+#endif
     if (type) {
-      if (_controllers[i] >> 1 == 0) {
+      if ((_controllers[i] & RECEIVING) == 0) {
         return i;
       }
     } else {
-      if (_controllers[i] == 0) {
+      if ((_controllers[i] & TRANSMITTING) == 0) {
         return i;
       }
     }
