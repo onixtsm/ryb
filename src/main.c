@@ -8,6 +8,7 @@
 
 #include "communication.h"
 #include "helpers.h"
+#include "ui.h"
 
 /* Call with TX pin to use(should be set as TX)
 will ask for string to send, and appends \n at the end*/
@@ -37,11 +38,13 @@ int main() {
   pynq_init();
   switchbox_init();
   reset_pins();
+  init_font("./fonts/ILGH16XB.FNT");
   char c[3];             // store current command
   int TX[2] = {10, 10};  // store assigned pins
   int RX[2] = {10, 10};
   int r = 0;  // result/error temporary store
   bool run = true;
+  pid_t pid;
 
   printHelp();
   for (; run;) {
@@ -70,7 +73,7 @@ int main() {
           printf("Pin not yet defined\n");
           break;
         }
-        pid_t pid = fork();  // fork a childprocess for receiving the data, the main process will enforce a timeout
+        pid = fork();  // fork a childprocess for receiving the data, the main process will enforce a timeout
         if (pid < 0) {
           printf("Error creating childprocess\n");
           break;
@@ -116,6 +119,34 @@ int main() {
         r = set_pin(pin, (c[1] == 't') ? 0 : 1);
         // if succesfully set, store in array
         if (r == 0) ((p[0] == 10) ? (p[0] = pin) : (p[1] = pin));
+        // start listening for UART signals and display on screen
+        pid = fork();  // fork a childprocess for receiving the data, the main process will enforce a timeout
+        if (pid < 0) {
+          printf("Error creating childprocess\n");
+          break;
+        }
+        if (pid == 0) {  // childprocess
+          int childpin = pin;
+          uint8_t rec;
+          // font height is 16px
+          char formatted[100] = "";
+          sprintf(formatted, "#f000pin %d:", childpin);
+          int nr2 = (p[1] == childpin);
+          draw_string(formatted, 0, (nr2 ? (DISPLAY_HEIGHT / 2) : 0));
+          char str[80];
+          while (1) {
+            int i = 0;
+            while ((rec = recieve_data(childpin)) != '\n') str[i++] = rec;
+            str[i] = 0;
+            // display on screen
+            clear_lines(1, 0, (nr2 ? (DISPLAY_HEIGHT / 2) : 0) + 16, 0);
+            sprintf(formatted, "#f00f->%s", str);
+            printf("%d, %d\n", childpin, nr2);
+            draw_string(formatted, 0, (nr2 ? (DISPLAY_HEIGHT / 2) : 0) + 16);
+          }
+          // if child process smh reaches this part, terminate
+          return EXIT_SUCCESS;
+        }  // else just continue
         break;
       case 'p':
         // print only if already set
