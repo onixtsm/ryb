@@ -19,23 +19,29 @@ Follow these steps to contribute this project.
 2. Fork this project
 3. Clone it with
 ```console
-git clone https://github.com/[username]/ryb
+$ git clone https://github.com/[username]/ryb
 ```
 4. Make new branch with command
 ```console
-git checkout -b [branch name]
+$ git checkout -b [branch name]
 ```
 5. Edit code
 6. Commit all changes (**message should be meaningful and well describing your changes**)
 ```console
-git add [files or dirs you changes]
-git commit
+$ git add [files or dirs you changes]
+$ git commit
 ```
 7. Push changes to your account
 ```console
-git push
+$ git push
 ```
 8. Make pull request on github
+
+## Getting newest chages
+
+```console
+$ git pull -p
+```
 
 ## Coding rules
 
