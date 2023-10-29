@@ -4,7 +4,7 @@ This is TU/e EE group 10 Rock You Baby projects codebase.
 
 ## Setup
 
-Instalation
+Installation
 
 ```console
 $ git clone https://github.com/onixtsm/ryb
@@ -17,7 +17,7 @@ $ make # can use make -j 4 to compile faster
 
 **All code is placed in `src/` directory**
 To recompile code run `make` from root of the project
-You can intend code by runing
+You can indent code by runing
 ```console
 $ make indent
 ```
