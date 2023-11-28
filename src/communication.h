@@ -10,12 +10,17 @@
 typedef struct {
   int8_t controller;  // Empty pin has -1 as controller
   bool type;
-} _pin_t;
+} pin_t;
 
 #define TRANSMITTING 0b01
 #define RECEIVING 0b10
 
 typedef uint8_t _controller_t;
+
+/* accepts pin_t array of pins size of PIN_COUNT
+ * and copys pinmap to that array
+ */
+void get_pinmap(pin_t pins[PIN_COUNT]);
 
 /* Recieves pin number [0..5] and data (uint8_t).
  * returns error on wrong pin or unset controller

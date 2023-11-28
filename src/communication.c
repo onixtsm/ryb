@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "helpers.h"
 #include "pinmap.h"
@@ -19,12 +20,17 @@
 
 #define BIT_TYPE(a) ((a) ? TRANSMITTING : RECEIVING)
 
-_pin_t _pins[PIN_COUNT] = {
-    {-1, false},
-};
 _controller_t _controllers[CONTROLLER_COUNT] = {0};
 
 bool validate_pin(const uint8_t pin) { return pin < PIN_COUNT; }
+
+pin_t _pins[PIN_COUNT] = {
+    {-1, false},
+};
+
+void get_pinmap(pin_t pins[PIN_COUNT]) {
+  memcpy(pins, _pins, sizeof(pin_t) * PIN_COUNT);
+}
 
 int8_t find_suitable_controller(const bool type) {
   for (int8_t i = 0; i < CONTROLLER_COUNT; ++i) {
