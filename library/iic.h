@@ -31,6 +31,68 @@ SOFTWARE.
  *
  * High-level functions to read/write to clients connected to the two
  * integrated IIC modules.
+ * Before sending and receiving bytes the IIC2 must be connect to some I/O pins
+ * through the switchbox, e.g.
+ * @code
+ * switchbox_set_pin(IO_PMODA3, SWB_IIC0_SCL);
+ * switchbox_set_pin(IO_PMODA4, SWB_IIC0_SDA);
+ * @endcode
+ * The Pmod A pins (see pinmap.h) are good because they have 2K2 pull-up resistors built in.
+ * IICs can be routed through the switch box (e.g. SWB_IIC0_SCL/SDA, see switchbox.h).
+ *
+ * After that, an example of how to use this library for the MASTER.
+ * @code
+ * #include <libpynq.h>
+ * int main (void)
+ * {
+ *   // initialise all I/O
+ *   pynq_init();
+ *   iic_init(IIC0);
+ *   uint32_t i;
+ *   // you can use multiple slaves, here only one is shown
+ *   uint32_t slave_address = 0x70;
+ *   // read out all registers of the slave
+ *   for (int reg=0; reg < 32; reg++) {
+ *     if (iic_read_register(IIC0, slave_address, reg, (uint8_t *) &i, 4)) { // 4 bytes
+ *       printf("register[%d]=error\n",reg);
+ *     } else {
+ *       printf("register[%d]=%d\n",reg,i);
+ *     }
+ *   }
+ *   // clean up after use
+ *   pynq_destroy();
+ *   return EXIT_SUCCESS;
+ * }
+ * @endcode
+ *
+ * An example of how to use this library for the SLAVE.
+ * @code
+ * int main(void)
+ * {
+ *   // this is the address by which this slave is reached by the master
+ *   // different slaves must have different addresses
+ *   const uint32_t my_slave_address = 0x70;
+ *   // this array contains 32 registers that can be written & read by the master
+ *   // the slave can of course modify the values of the registers
+ *   uint32_t my_register_map[32] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
+ *   const uint32_t my_register_map_length = sizeof(my_register_mmap)/sizeof(uint32_t);
+ *
+ *   pynq_init();
+ *   iic_init(IIC0);
+ *   iic_reset(IIC0);
+ *   iic_set_slave_mode(IIC0, my_slave_address, &(my_register_map[0]), my_register_map_length);
+ *   while (1) {
+ *     // the slave mode handler must be run regularly to react to the master
+ *     iic_slave_mode_handler(IIC0);
+ *     // insert your own code here, to do whatever the slave needs to do;
+ *     // make sure that you execute the slave mode handler regularly enough though
+ *     sleep_msec(10);
+ *   }
+ *   iic_destroy(IIC0);
+ *   pynq_destroy();
+ *   return EXIT_SUCCESS;
+ * }
+ * @endcode
  *
  * @{
  **/
