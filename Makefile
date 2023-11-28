@@ -33,9 +33,12 @@ D_FILES:=$(OBJECTS_LIBRARIES:.o=.d) $(LIBRARIES:.o=.d)
 CFLAGS:=-I. -I${ROOT_DIR}/platform/ -I${ROOT_DIR}/library/ -I${ROOT_DIR}/external/ -lm -O0 -g3 -ggdb -Wextra -Wall
 LDFLAGS:= -lm -ggdb -g3 -I. -I${SRC_DIR}
 
+nopynq:=0
 x86_64:=x86_64
 ifeq ($(shell uname -m), $(x86_64))
-	CC=arm-linux-gnueabihf-gcc
+	ifeq ($(nopynq), 0)
+		CC=arm-linux-gnueabihf-gcc
+	endif
 endif
 
 all: ${LIB_PYNQ} ${LIB_SCPI} ${BUILD_DIR}/main
@@ -49,7 +52,9 @@ ${OBJ_DIR}/%.o: ${SRC_DIR}/%.c | ${DIRS}
 
 ${BUILD_DIR}/main: ${SOURCES_OBJ} ${LIB_PYNQ} ${EXTERNAL_LIBS}
 	$(VERBOSE)${CC} -o $@ $^ ${LDFLAGS} -DDEBUG
-	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
+ifeq ($(nopynq), 0)
+		$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
+endif
 
 # first time 
 install:
@@ -62,9 +67,11 @@ install:
 	$(MAKE) all applications
 	@# always copy latest version
 	cp applications/read-version/main bin/compatibility-check
+ifeq ($(nopynq), 0)
 	sudo setcap cap_sys_rawio+ep bin/compatibility-check
 	cp applications/pin-indexing-tool/main bin/pin-indexing-tool
 	sudo setcap cap_sys_rawio+ep bin/pin-indexing-tool
+endif
 
 ${LIB_SCPI}:
 	$(MAKE) -C ${ROOT_DIR}/external/scpi-parser/libscpi/

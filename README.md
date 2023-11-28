@@ -47,6 +47,7 @@ $ git pull -p
 
 **All code is placed in `src/` directory**
 To recompile code run `make` from root of the project
+If you want to compile code on your computer (for instance you do not need any pynqboard IO), you can use `make nopynq=1`. If you do that you need to recompile whole library with this option.
 You can indent code by runing
 ```console
 $ make indent
