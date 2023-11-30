@@ -1,7 +1,7 @@
 [
   {
     "arguments": [
-      "/usr/bin/arm-linux-gnueabihf-gcc",
+      "/usr/bin/cc",
       "-c",
       "-I.",
       "-I./platform/",
@@ -12,33 +12,13 @@
       "-ggdb",
       "-Wextra",
       "-Wall",
-      "-o",
-      "build/obj/communication.o",
-      "src/communication.c"
-    ],
-    "directory": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb",
-    "file": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/src/communication.c",
-    "output": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/build/obj/communication.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/arm-linux-gnueabihf-gcc",
-      "-c",
-      "-I.",
-      "-I./platform/",
-      "-I./library/",
-      "-I./external/",
-      "-O0",
-      "-g3",
-      "-ggdb",
-      "-Wextra",
-      "-Wall",
+      "-DDEBUG",
       "-o",
       "build/obj/main.o",
       "src/main.c"
     ],
-    "directory": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb",
-    "file": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/src/main.c",
-    "output": "/mnt/Windows/Users/onix/Documents/Uni/paee/pynq/ryb/build/obj/main.o"
+    "directory": "/mnt/Windows/Users/onix/Documents/Uni/paee/ryb",
+    "file": "/mnt/Windows/Users/onix/Documents/Uni/paee/ryb/src/main.c",
+    "output": "/mnt/Windows/Users/onix/Documents/Uni/paee/ryb/build/obj/main.o"
   }
 ]
