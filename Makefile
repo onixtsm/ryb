@@ -30,8 +30,9 @@ SOURCES_OBJ:=$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
 
 D_FILES:=$(OBJECTS_LIBRARIES:.o=.d) $(LIBRARIES:.o=.d)
 
-CFLAGS:=-I. -I${ROOT_DIR}/platform/ -I${ROOT_DIR}/library/ -I${ROOT_DIR}/external/ -lm -O0 -g3 -ggdb -Wextra -Wall
+CFLAGS:=-I. -I${ROOT_DIR}/platform/ -I${ROOT_DIR}/library/ -I${ROOT_DIR}/external/ -lm -O0 -g3 -ggdb -Wextra -Wall ${MYFLAGS}
 LDFLAGS:= -lm -ggdb -g3 -I. -I${SRC_DIR}
+
 
 nopynq:=0
 x86_64:=x86_64

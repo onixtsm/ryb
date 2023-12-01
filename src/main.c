@@ -1,3 +1,4 @@
+#include <libpynq.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -12,6 +13,9 @@
 #define MOTORS_PIN 3
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+int test_transmit_data(int, int) { return 255; }
+int test_recieve_data(int) { return 255; }
 
 typedef uint8_t FA;
 
@@ -31,7 +35,11 @@ int findPath(uint8_t f, uint8_t a, float stress) {
     return 0;
   }
   FA freqamp = add_freq_and_amplitude(f, a);
+#ifndef DRYRUN
   uint8_t err = transmit_data(MOTORS_PIN, freqamp);
+#else
+  uint8_t err = test_transmit_data(MOTORS_PIN, freqamp);
+#endif
   printf("%08b\n", add_freq_and_amplitude(f, a));
   if (err != 0) {
     fprintf(stderr, "Cannot send data %d, because of %d\n", freqamp, err);
@@ -39,17 +47,26 @@ int findPath(uint8_t f, uint8_t a, float stress) {
 
   float new_stress;
   do {
+#ifndef DRYRUN
+    printf("Bad\n");
     uint8_t crying_volume = recieve_data(CRYING_PIN);
+#else
+    uint8_t crying_volume = test_recieve_data(CRYING_PIN);
+#endif
     if (crying_volume == 255) {
       fprintf(stderr, "Cannot receive crying volume, because of %d\n", err);
     }
+#ifndef DRYRUN
     uint8_t heartbeat_freq = recieve_data(HEARTBEAT_PIN);
-    if (heartbeat_freq) {
+#else
+    uint8_t heartbeat_freq = test_recieve_data(HEARTBEAT_PIN);
+#endif
+    if (heartbeat_freq == 255) {
       fprintf(stderr, "Cannot receive heartbeat freq, because of %d\n", err);
     }
     new_stress = MIN(get_stress_from_crying_volume(crying_volume), get_stress_from_heartbeat(heartbeat_freq));
 
-    sleep(1000 / 64);
+    usleep(1000*1000 / 64);
   } while (stress == new_stress);
 
   if (new_stress > stress) {
@@ -67,6 +84,7 @@ int findPath(uint8_t f, uint8_t a, float stress) {
 }
 
 int main(void) {
+  // pynq_init();
   int matrix[SIZE][SIZE];
 
   findPath(4, 4, 100);
