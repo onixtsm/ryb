@@ -14,9 +14,6 @@
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-int test_transmit_data(int, int) { return 255; }
-int test_recieve_data(int) { return 255; }
-
 typedef uint8_t FA;
 
 FA add_freq_and_amplitude(uint8_t freq, uint8_t amplitude) {
@@ -26,70 +23,43 @@ FA add_freq_and_amplitude(uint8_t freq, uint8_t amplitude) {
   return (FA)(freq << 4) | amplitude;
 }
 
-int findPath(uint8_t f, uint8_t a, float stress) {
-  if (f == 0 && a == 0) {
-    return 1;
-  }
+int matrix[5][5];
+int find_path(FA fa, int stress) {
+  uint8_t amplitude = fa & 0b00001111;
+  uint8_t freq = (fa & 0b11110000) >> 4;
 
-  if (f > SIZE - 1 || a > SIZE - 1) {
+  if (amplitude > 4 || freq > 4) {
     return 0;
   }
-  FA freqamp = add_freq_and_amplitude(f, a);
-#ifndef DRYRUN
-  uint8_t err = transmit_data(MOTORS_PIN, freqamp);
-#else
-  uint8_t err = test_transmit_data(MOTORS_PIN, freqamp);
-#endif
-  printf("%08b\n", add_freq_and_amplitude(f, a));
-  if (err != 0) {
-    fprintf(stderr, "Cannot send data %d, because of %d\n", freqamp, err);
-  }
 
-  float new_stress;
-  do {
-#ifndef DRYRUN
-    printf("Bad\n");
-    uint8_t crying_volume = recieve_data(CRYING_PIN);
-#else
-    uint8_t crying_volume = test_recieve_data(CRYING_PIN);
-#endif
-    if (crying_volume == 255) {
-      fprintf(stderr, "Cannot receive crying volume, because of %d\n", err);
-    }
-#ifndef DRYRUN
-    uint8_t heartbeat_freq = recieve_data(HEARTBEAT_PIN);
-#else
-    uint8_t heartbeat_freq = test_recieve_data(HEARTBEAT_PIN);
-#endif
-    if (heartbeat_freq == 255) {
-      fprintf(stderr, "Cannot receive heartbeat freq, because of %d\n", err);
-    }
-    new_stress = MIN(get_stress_from_crying_volume(crying_volume), get_stress_from_heartbeat(heartbeat_freq));
+  int new_stress = matrix[freq][amplitude];
 
-    usleep(1000*1000 / 64);
-  } while (stress == new_stress);
-
-  if (new_stress > stress) {
+  if (new_stress >= stress) {
     return 0;
   }
-  int r = findPath(f - 1, a, new_stress);
-  if (r) {
+  if (new_stress == 1) {
     return 1;
   }
-  r = findPath(f, a - 1, new_stress);
-  if (r) {
-    return 1;
-  }
-  return 1;
+  FA faa = add_freq_and_amplitude(freq, amplitude - 1);
+  FA faf = add_freq_and_amplitude(freq - 1, amplitude);
+
+  int r;
+  r = find_path(faa, new_stress);
+  if (r > 0) return r;
+  r = find_path(faf, new_stress);
+  if (r > 0) return r;
+  return 0;
 }
 
 int main(void) {
-  // pynq_init();
-  int matrix[SIZE][SIZE];
-
-  findPath(4, 4, 100);
-
   generate_matrix_path(matrix, 9);
+  FA fa = add_freq_and_amplitude(4, 4);
   dump_matrix(matrix);
+  int r = find_path(fa, 10);
+  if (r) {
+    printf("Found way\n");
+  } else {
+    printf("did not found a way\n");
+  }
   return 0;
 }
