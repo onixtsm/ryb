@@ -24,6 +24,7 @@ int main(void) {
   pwm_init(PWM1, 256);
 
   const int UARTpin = 0;
+  set_pin(UARTpin, 1);
 
   uint8_t rec = 0;
   char formatted[100] = "";
@@ -73,6 +74,8 @@ int main(void) {
     sprintf(formatted, "#001fFrequency: %d%%", (int)((float)freq / 16 * 100));  // blue
     draw_string(formatted, 0, (DISPLAY_HEIGHT / 2) + FONT_SIZE * 2);
   }
+  
+  free_pin(UARTpin);
 
   pwm_destroy(PWM0);
   pwm_destroy(PWM1);
