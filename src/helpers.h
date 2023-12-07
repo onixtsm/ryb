@@ -8,4 +8,5 @@
     printf(#var " = %" #type "\n", var);         \
   } while (0)
 
+#define PRINT(file, s) fprintf(file, "[LOG] form %s:%d in %s says: %s\n", __FILE__, __LINE__, __func__, s)
 #endif // HEPLERS_H
