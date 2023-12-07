@@ -1,11 +1,5 @@
 #include <libpynq.h>
-#include <signal.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <time.h>
-#include <unistd.h>
 
 #include "communication.h"
 #include "helpers.h"
@@ -16,7 +10,6 @@
 #define FONT_SIZE 24
 
 int main(void) {
-  sleep_msec(12000);
   pynq_init();
   switchbox_init();
   reset_pins();
@@ -48,7 +41,6 @@ int main(void) {
     printf("Error forking\n");
   else if (pid == 0) {
     for (char temp = 0;; temp++) {
-      // UARTDEBUG
       printf("transmit %d result %d\n", temp, transmit_data(5, temp));
       sleep_msec(3000);
     }
