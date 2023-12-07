@@ -48,10 +48,10 @@ ${BUILD_DIR}/%.d: %.c | ${DIRS}
 
 ${OBJ_DIR}/%.o: ${SRC_DIR}/%.c | ${DIRS}
 	@mkdir -p $(@D)  # Create the directory if it doesn't exist
-	${CC} -c -o $@ $< ${CFLAGS} -DDEBUG
+	${CC} -c -o $@ $< ${CFLAGS} ${MYVARS}
 
 ${BUILD_DIR}/main: ${SOURCES_OBJ} ${LIB_PYNQ} ${EXTERNAL_LIBS}
-	$(VERBOSE)${CC} -o $@ $^ ${LDFLAGS} -DDEBUG
+	$(VERBOSE)${CC} -o $@ $^ ${LDFLAGS} ${MYWARS}
 ifeq ($(nopynq), 0)
 		$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
 endif
