@@ -72,6 +72,29 @@ int transmit_data(const uint8_t pin, const uint8_t data) {
   return 0;
 }
 
+uint8_t recieve_data_timer(const uint8_t pin, const unsigned int a) {
+  if (!validate_pin(pin)) {
+    return 255;
+  }
+  int8_t controller = _pins[pin].controller;
+  if (controller == -1) {
+    return 255;
+  }
+#ifdef DEBUG
+  LOG(d, controller);
+  LOG(d, pin);
+#endif
+
+  for(size_t i = 0; i < 5; i++) {
+     if (uart_has_data(controller)) {
+      return uart_recv(controller);
+    }
+    sleep_msec(a/5);
+  }
+  return 255;
+}
+
+
 uint8_t recieve_data(const uint8_t pin) {
   if (!validate_pin(pin)) {
     return 1;
@@ -128,9 +151,9 @@ int set_pin(const uint8_t pin, const bool type) {
   }
 
   if (controller) {                                       // In case of UART 1 use correct offset
-    switchbox_set_pin(pin + IO_A0, type + SWB_UART1_TX);  // Transmiter is 0 and reciever ir 1;
+    switchbox_set_pin(pin + IO_AR0, type + SWB_UART1_TX);  // Transmiter is 0 and reciever ir 1;
   } else {
-    switchbox_set_pin(pin + IO_A0, type + SWB_UART0_TX);
+    switchbox_set_pin(pin + IO_AR0, type + SWB_UART0_TX);
   }
 #ifdef DEBUG
   LOG(d, type + SWB_UART0_TX);

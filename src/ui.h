@@ -12,7 +12,7 @@ int init_font(char *path);
  * Accepts char *string, start x and y position.
  * if string overflows screen width, then it is continued
  * on next row if it is possible. If not then returns not 0 code.
- * To color string add to string # and 4 hex digits [0..f] (ie #e43d).
+ * To color string add to string # and 4 hex digits [0..f] (ie #e43d, find colors here: https://rgbcolorpicker.com/565).
  * to print litteral # use ##.
  * Also understands \n and \t.
  */
