@@ -15,7 +15,6 @@ typedef struct {
 #define TRANSMITTING 0b01
 #define RECEIVING 0b10
 
-typedef uint8_t _controller_t;
 
 /* accepts pin_t array of pins size of PIN_COUNT
  * and copys pinmap to that array

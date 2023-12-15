@@ -1,6 +1,7 @@
 #ifndef UI_H
 #define UI_H
 #include <stdint.h>
+#include "display.h"
 
 /* init_font accepts string font path(like ./fonts/something)
  * initialises display as well if it was not initialised
@@ -27,5 +28,8 @@ int clear_lines(uint8_t line_count, uint8_t line_start_x, uint8_t line_start_y, 
  * if dispplay is not initialised does nothing.
  */
 void fill_display(uint16_t color);
+
+uint16_t rgb_conv(uint16_t r, uint16_t g, uint16_t b);
+
 
 #endif  // UI_H

@@ -20,6 +20,8 @@
 
 #define BIT_TYPE(a) ((a) ? TRANSMITTING : RECEIVING)
 
+typedef uint8_t _controller_t;
+
 _controller_t _controllers[CONTROLLER_COUNT] = {0};
 
 bool validate_pin(const uint8_t pin) { return pin < PIN_COUNT; }
