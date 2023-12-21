@@ -12,6 +12,9 @@
 #define HEARTBEAT_PIN 2
 #define MOTORS_PIN 3
 
+#define HB_TOLERANCE 5
+#define CRY_TOLERANCE 10
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 typedef uint8_t FA;
@@ -23,35 +26,7 @@ FA add_freq_and_amplitude(uint8_t freq, uint8_t amplitude) {
   return (FA)(freq << 4) | amplitude;
 }
 
-int matrix[5][5];
 int find_path(FA fa, int stress) {
-  uint8_t amplitude = fa & 0b00001111;
-  uint8_t freq = (fa & 0b11110000) >> 4;
-
-  if (amplitude > 4 || freq > 4) {
-    return 0;
-  }
-
-  int new_stress = matrix[freq][amplitude];
-
-  if (new_stress >= stress) {
-    return 0;
-  }
-  if (new_stress == 1) {
-    return 1;
-  }
-  FA faa = add_freq_and_amplitude(freq, amplitude - 1);
-  FA faf = add_freq_and_amplitude(freq - 1, amplitude);
-
-  int r;
-  r = find_path(faa, new_stress);
-  if (r > 0) return r;
-  r = find_path(faf, new_stress);
-  if (r > 0) return r;
-  return 0;
-}
-
-int real_find_path(FA fa, int stress) {
   uint8_t amplitude = fa & 0b00001111;
   uint8_t freq = (fa & 0b11110000) >> 4;
 
@@ -69,16 +44,19 @@ int real_find_path(FA fa, int stress) {
   uint8_t volume, hb;
   do {
     volume = recieve_data(CRYING_PIN);
-    if (volume == 255) {
-      fprintf(stderr, "Bad volume");
+    if (volume > (100 + CRY_TOLERANCE)) { // max volume value is 100% (proceeding with this might give weird stress values)
+      fprintf(stderr, "Bad volume (%d)",volume);
       bad = 1;
     }
     hb = recieve_data(HEARTBEAT_PIN);
-    if (hb == 255) {
+    if (hb > (240 + HB_TOLERANCE) || hb < (60 - HB_TOLERANCE)) {
       fprintf(stderr, "Bad heartbeat");
       bad = 1;
     }
     if (!bad) {
+        if (hb>240) hb = 240;
+        else if (hb<60) hb = 60;
+        if (volume>100) volume = 100;
       new_stress = MIN(get_stress_from_heartbeat(hb), get_stress_from_crying_volume(volume));
       bad = 0;
     }
@@ -101,20 +79,7 @@ int real_find_path(FA fa, int stress) {
   if (r > 0) return r;
   return 0;
 }
-#if 0
-int main(void) {
-  generate_matrix_path(matrix, 9);
-  FA fa = add_freq_and_amplitude(4, 4);
-  dump_matrix(matrix);
-  int r = find_path(fa, 10);
-  if (r) {
-    printf("Found way\n");
-  } else {
-    printf("did not found a way\n");
-  }
-  return 0;
-}
-#else
+
 int main(void) {
   pynq_init();
   reset_pins();
@@ -139,7 +104,7 @@ int main(void) {
   }
   // DEFAULT VALUES FOR FA 4 4
   FA fa = add_freq_and_amplitude(4, 4);
-  int r = real_find_path(fa, 100);
+  int r = find_path(fa, 100);
 
   if (r) {
     printf("Found way\n");
