@@ -14,6 +14,9 @@
 
 #define HB_TOLERANCE 5
 #define CRY_TOLERANCE 10
+#define STRESS_TOLERANCE 5
+
+#define DISABLE_CRY 0
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -43,30 +46,35 @@ int find_path(FA fa, int stress) {
   uint8_t new_stress = 128;
   uint8_t volume, hb;
   do {
+#if DISABLE_CRY
+    volume = 100;
+#else
     volume = recieve_data(CRYING_PIN);
-    if (volume > (100 + CRY_TOLERANCE)) { // max volume value is 100% (proceeding with this might give weird stress values)
-      fprintf(stderr, "Bad volume (%d)",volume);
+    if (volume > (100 + CRY_TOLERANCE)) {  // max volume value is 100% (proceeding with this might give weird stress values)
+      fprintf(stderr, "Bad volume (%d)", volume);
       bad = 1;
     }
+#endif
     hb = recieve_data(HEARTBEAT_PIN);
     if (hb > (240 + HB_TOLERANCE) || hb < (60 - HB_TOLERANCE)) {
-      fprintf(stderr, "Bad heartbeat");
+      fprintf(stderr, "Bad heartbeat (%d)", hb);
       bad = 1;
     }
     if (!bad) {
-        if (hb>240) hb = 240;
-        else if (hb<60) hb = 60;
-        if (volume>100) volume = 100;
+      if (hb > 240)
+        hb = 240;
+      else if (hb < 60)
+        hb = 60;
+      if (volume > 100) volume = 100;
       new_stress = MIN(get_stress_from_heartbeat(hb), get_stress_from_crying_volume(volume));
       bad = 0;
     }
     usleep(1000 * 1000 / 64);
-  } while (new_stress != stress);
+  } while (abs(new_stress - stress) < STRESS_TOLERANCE);  // if diff is less than tolerance, no new step, just reading error
 
-  if (new_stress > stress) {
+  if (new_stress > stress) {  // if stress went up, did sth wrong (will start over)
     return 0;
-  }
-  if (new_stress == 1) {
+  } else if (new_stress == 10) {  // 10 is lowest stress value possible in the mappings used -> VICTORY!
     return 1;
   }
   FA faa = add_freq_and_amplitude(freq, amplitude - 1);
@@ -102,15 +110,16 @@ int main(void) {
     fprintf(stderr, "Cannot set MOTORS_PIN\n");
     return 1;
   }
+
   // DEFAULT VALUES FOR FA 4 4
   FA fa = add_freq_and_amplitude(4, 4);
-  int r = find_path(fa, 100);
-
-  if (r) {
-    printf("Found way\n");
-  } else {
-    printf("did not found a way\n");
+  int r = 0;
+  while (!r) {  // if it fails, restart from beginning
+    r = find_path(fa, 100);
+    if (!r) printf("did not find a way, trying again\n");
   }
+
+  printf("Found way\n");
 
   free_pin(CRYING_PIN);
   free_pin(HEARTBEAT_PIN);
