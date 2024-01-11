@@ -26,6 +26,7 @@
 #define TIME_TRESHHOLD 11
 
 int baby_calming(FA fa, int stress) {
+try_again:
   uint8_t amplitude = fa2amp(fa);
   uint8_t freq = fa2freq(fa);
 
@@ -37,7 +38,7 @@ int baby_calming(FA fa, int stress) {
   time_t start_time;
   size_t i = 0;
   while (i < 2) {
-    err = transmit_data(MT_PIN, fa);  // Sending data twice, because UART 1 time may send a gbberish
+    err = transmit_data(MT_PIN, fa);  // Sending data twice, because UART 1st time may send a gbberish
     ++i;
     if (err != 0) {
       i--;
@@ -52,7 +53,6 @@ int baby_calming(FA fa, int stress) {
 
   uint8_t volume, hb;
   bool time_set = false;
-
 
   do {
     do {
@@ -129,7 +129,7 @@ int baby_calming(FA fa, int stress) {
       PRINT(stdout, "PANIC JUMP!!");
     }
     if (stress > new_stress + EPS) {
-      printf("new_stress - stress < EPS: %d\n", new_stress - stress < EPS);
+      PRINT(stdout, "Stress went down\n");
       break;
     }
   } while (true);
@@ -148,11 +148,17 @@ int baby_calming(FA fa, int stress) {
     case 0:
       return 0;
     case 1:
+      // return 3;
+      goto try_again;
       PRINT(stdout, "Unexpected value");
       break;
     case 2:
+      PRINT(stdout, "PANIC JUMP!!");
       return 2;
+    case 3:
+      goto try_again;
   }
+  PRINT(stdout, "PANIC JUMP!!");
   return 2;
 }
 
