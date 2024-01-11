@@ -1,7 +1,9 @@
 #include <libpynq.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "buttons.h"
 #include "communication.h"
@@ -20,17 +22,19 @@
 #define HB_PIN 2
 #define MT_PIN 3
 
-#define EPS 0
-#define TIMEOUT 20
+#define EPS 5
+#define TIME_TRESHHOLD 11
 
 int baby_calming(FA fa, int stress) {
   uint8_t amplitude = fa2amp(fa);
   uint8_t freq = fa2freq(fa);
+
   if (amplitude > SIZE - 1 || freq > SIZE - 1) {
-    return 0;
+    return 1;
   }
 
   uint8_t err, new_stress;
+  time_t start_time;
   size_t i = 0;
   while (i < 2) {
     err = transmit_data(MT_PIN, fa);  // Sending data twice, because UART 1 time may send a gbberish
@@ -41,25 +45,18 @@ int baby_calming(FA fa, int stress) {
   }
   char output[10] = {0};
   clear_lines(2, 170, 24 * 7, 0);
-  sprintf(output, "%d", freq);
+  snprintf(output, 10, "%d", freq);
   draw_string(output, 170, 24 * 7);
-  sprintf(output, "%d", amplitude);
+  snprintf(output, 10, "%d", amplitude);
   draw_string(output, 170, 24 * 8 - 1);
 
   uint8_t volume, hb;
-  size_t tries;
-  size_t global_tries = 0;
-  int timeout = 0;
+  bool time_set = false;
+
+
   do {
-    if (global_tries > 0) {
-      sleep_msec(1000);
-    }
-    global_tries++;
-    tries = 0;
     do {
-      run_buttons();
       if (get_switch_state(VL_SWITCH)) {
-        sleep_msec(tries / 2 * 1000);
         volume = recieve_data_timer(VL_PIN, 100);
       } else {
         PRINT(stdout, "Enter volume: ");
@@ -67,27 +64,20 @@ int baby_calming(FA fa, int stress) {
         while (getchar() != '\n')
           ;
       }
-      char output[10];
       char color[6] = "#0f00";
       if (volume == 255) {
         strcpy(color, "#f000");
       } else if (volume > 100) {
         strcpy(color, "#ff00");
       }
-      sprintf(output, "%s %d", color, volume);
+      snprintf(output, 10, "%s %d", color, volume);
       clear_lines(1, 150, 0, 0);
       draw_string(output, 150, 0);
-      sprintf(output, "%zu", tries + 1);
-      draw_string(output, 220, 0);
-      tries++;
+      sleep_msec(200);
     } while (volume == 255);
 
-    tries = 0;
-
     do {
-      run_buttons();
       if (get_switch_state(HB_SWITCH)) {
-        sleep_msec(tries / 2 * 1000);
         hb = recieve_data_timer(HB_PIN, 100);
       } else {
         PRINT(stdout, "Enter hearthbeat: ");
@@ -95,28 +85,29 @@ int baby_calming(FA fa, int stress) {
         while (getchar() != '\n')
           ;
       }
-      char output[10];
       char color[6] = "#0f00";
       if (hb == 255) {
         strcpy(color, "#f000");
       } else if (hb > 240 || hb < 60) {
         strcpy(color, "#ff00");
       }
-      sprintf(output, "%s %d", color, hb);
+      snprintf(output, 10, "%s %d", color, hb);
       clear_lines(1, 150, 1 * 24, 0);
       draw_string(output, 150, 1 * 24);
-      sprintf(output, "%zu", tries + 1);
-      draw_string(output, 220, 1 * 24);
-      tries++;
+      sleep_msec(200);
     } while (hb == 255);
+
+    if (!time_set) {
+      start_time = time(NULL);
+      time_set = true;
+    }
 
     uint8_t hb_stress = get_stress_from_heartbeat(hb);
     uint8_t vl_stress = get_stress_from_crying_volume(volume);
-    char output[10];
     clear_lines(3, 170, 3 * 24, 0);
-    sprintf(output, "#%x %d", rgb_conv(255, 255 - vl_stress * 2.55, 255 - vl_stress * 2.55), vl_stress);
+    snprintf(output, 10, "#%x %d", rgb_conv(255, 255 - vl_stress * 2.55, 255 - vl_stress * 2.55), vl_stress);
     draw_string(output, 170, 3 * 24);
-    sprintf(output, "#%x %d", rgb_conv(255, 255 - hb_stress * 2.55, 255 - hb_stress * 2.55), hb_stress);
+    snprintf(output, 10, "#%x %d", rgb_conv(255, 255 - hb_stress * 2.55, 255 - hb_stress * 2.55), hb_stress);
     draw_string(output, 170, 4 * 24);
 
     if (hb_stress > 50) {
@@ -124,21 +115,45 @@ int baby_calming(FA fa, int stress) {
     } else {
       new_stress = vl_stress;
     }
-    sprintf(output, "#%x %d", rgb_conv(255, 255 - new_stress * 2.55, 255 - new_stress * 2.55), new_stress);
+    snprintf(output, 10, "#%x %d", rgb_conv(255, 255 - new_stress * 2.55, 255 - new_stress * 2.55), new_stress);
     draw_string(output, 170, 5 * 24);
-  } while (new_stress + EPS - stress >= EPS && timeout < TIMEOUT * 1000);
-
-  if (new_stress + EPS <= 10) {
-    return 1;
-  }
-
+    if (new_stress <= 10 + EPS) {
+      return 0;  // VICTORY
+    }
+    printf("start_time - time(NULL): %lu\n", time(NULL) - start_time);
+    if (time(NULL) - start_time > TIME_TRESHHOLD) {
+      return 1;  // Stress did not change. Need to go to the other side
+    }
+    if (new_stress > stress + EPS) {
+      return 2;  // Panic jump **SHOULD NOT HAPPEN**
+      PRINT(stdout, "PANIC JUMP!!");
+    }
+    if (stress > new_stress + EPS) {
+      printf("new_stress - stress < EPS: %d\n", new_stress - stress < EPS);
+      break;
+    }
+  } while (true);
   int r;
   r = baby_calming(add_freq_and_amplitude(freq, amplitude - 1), new_stress);
-  if (r > 0) return r;
+  switch (r) {
+    case 0:
+      return 0;
+    case 1:
+      break;
+    case 2:
+      return 2;
+  }
   r = baby_calming(add_freq_and_amplitude(freq - 1, amplitude), new_stress);
-  if (r > 0) return r;
-
-  return 0;
+  switch (r) {
+    case 0:
+      return 0;
+    case 1:
+      PRINT(stdout, "Unexpected value");
+      break;
+    case 2:
+      return 2;
+  }
+  return 2;
 }
 
 void open_stats(void) {
@@ -161,7 +176,6 @@ int main(void) {
   set_pin(VL_PIN, 1);
   set_pin(HB_PIN, 1);
 
-
   if (init_font("fonts/ILGH24XB.FNT")) {
     ERROR("No display found");
     ERROR("Aborting everything");
@@ -171,7 +185,10 @@ int main(void) {
   open_stats();
 
   FA fa = add_freq_and_amplitude(4, 4);
-  baby_calming(fa, 100);
+  uint8_t r;
+  do {
+    r = baby_calming(fa, 128);
+  } while (r == 2);
 
   reset_pins();
   switches_destroy();
