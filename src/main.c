@@ -23,7 +23,7 @@
 #define MT_PIN 3
 
 #define EPS 5
-#define TIME_TRESHHOLD 11
+#define TIME_TRESHHOLD 20
 
 int baby_calming(FA fa, int stress) {
 try_again:
@@ -148,9 +148,8 @@ try_again:
     case 0:
       return 0;
     case 1:
-      // return 3;
-      goto try_again;
       PRINT(stdout, "Unexpected value");
+      return 3;
       break;
     case 2:
       PRINT(stdout, "PANIC JUMP!!");
@@ -177,6 +176,7 @@ void open_stats(void) {
 int main(void) {
   pynq_init();
   switches_init();
+  buttons_init();
   reset_pins();
   set_pin(MT_PIN, 0);
   set_pin(VL_PIN, 1);
@@ -190,9 +190,20 @@ int main(void) {
 
   open_stats();
 
-  FA fa = add_freq_and_amplitude(4, 4);
   uint8_t r;
+  FA fa;
   do {
+    fa = add_freq_and_amplitude(4, 4);
+    transmit_data(MT_PIN, fa);
+    if (get_switch_state(0) && get_switch_state(1)) {
+      PRINT(stdout, "Sleeping for 20s\n");
+      sleep_msec(20 * 1000);
+      PRINT(stdout, "Done: Sleeping for 20s\n");
+    }
+    if (get_button_state(0)) {
+      exit(1);
+    }
+
     r = baby_calming(fa, 128);
   } while (r == 2);
 
