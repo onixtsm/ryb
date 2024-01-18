@@ -22,7 +22,7 @@
 #define HB_PIN 2
 #define MT_PIN 3
 
-#define EPS 5
+#define EPS 10
 #define TIME_TRESHHOLD 20
 
 int baby_calming(FA fa, int stress) {
@@ -110,10 +110,10 @@ try_again:
     snprintf(output, 10, "#%x %d", rgb_conv(255, 255 - hb_stress * 2.55, 255 - hb_stress * 2.55), hb_stress);
     draw_string(output, 170, 4 * 24);
 
-    if (hb_stress > 50) {
-      new_stress = hb_stress;
-    } else {
+    if (vl_stress < 100 && (abs(vl_stress - hb_stress) < EPS)) {
       new_stress = vl_stress;
+    } else {
+      new_stress = hb_stress;
     }
     snprintf(output, 10, "#%x %d", rgb_conv(255, 255 - new_stress * 2.55, 255 - new_stress * 2.55), new_stress);
     draw_string(output, 170, 5 * 24);
